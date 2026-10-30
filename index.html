@@ -12,9 +12,7 @@
 <link rel="apple-touch-icon" href="icon-192.png">
 <link rel="icon" href="icon-192.png">
 <style>
-:root{--bg:#f4f6f8;--card:#fff;--tx:#1b2430;--mut:#6b7785;--line:#dde3ea;--pri:#1f6f8b;--g:#0a8a4a;--r:#c62828;--gb:#e6f5ec;--rb:#fdeaea;
-box-sizing:border-box;padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px)}
-:root:not([data-theme="light"]){}
+:root{--bg:#f4f6f8;--card:#fff;--tx:#1b2430;--mut:#6b7785;--line:#dde3ea;--pri:#1f6f8b;--g:#0a8a4a;--r:#c62828;--gb:#e6f5ec;--rb:#fdeaea;box-sizing:border-box;padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px)}
 @media (prefers-color-scheme:dark){:root:not([data-theme="light"]){--bg:#12171d;--card:#1b232c;--tx:#e8edf2;--mut:#93a1b0;--line:#2c3744;--pri:#59b4d1;--g:#4cd08a;--r:#ff7b7b;--gb:#143324;--rb:#3a1d1d;color-scheme:dark}}
 :root[data-theme="dark"]{--bg:#12171d;--card:#1b232c;--tx:#e8edf2;--mut:#93a1b0;--line:#2c3744;--pri:#59b4d1;--g:#4cd08a;--r:#ff7b7b;--gb:#143324;--rb:#3a1d1d;color-scheme:dark}
 html{scroll-padding-top:env(safe-area-inset-top,0px)}
@@ -34,8 +32,8 @@ h2{font-size:20px;margin:6px 2px 4px}
 .card h3{margin:0 0 8px;font-size:16px}
 label.f{display:block;margin-bottom:10px;font-size:14px}
 label.f span{display:block;color:var(--mut);margin-bottom:4px;font-size:13px}
-input{width:100%;font-size:17px;padding:11px 10px;border:1px solid var(--line);border-radius:10px;background:var(--bg);color:var(--tx);min-width:0}
-input:focus{outline:2px solid var(--pri);border-color:var(--pri)}
+input,select{width:100%;font-size:17px;padding:11px 10px;border:1px solid var(--line);border-radius:10px;background:var(--bg);color:var(--tx);min-width:0}
+input:focus,select:focus{outline:2px solid var(--pri);border-color:var(--pri)}
 .item{display:grid;gap:6px;align-items:end;margin-bottom:8px;padding-bottom:8px;border-bottom:1px dashed var(--line)}
 .item small{display:block;color:var(--mut);font-size:11px;margin-bottom:2px}
 .x{border:0;background:none;color:var(--r);font-size:22px;padding:6px;cursor:pointer}
@@ -50,85 +48,109 @@ nav button.on{color:var(--pri);font-weight:700}
 .hrow{display:flex;justify-content:space-between;align-items:center;padding:9px 0;border-bottom:1px solid var(--line)}
 .hrow small{color:var(--mut)}
 .sum div{display:flex;justify-content:space-between;padding:5px 0}
+.sum .t{border-top:1px solid var(--line);margin-top:4px;padding-top:8px;font-weight:700}
 #toast{position:fixed;left:50%;bottom:96px;transform:translateX(-50%);background:#222;color:#fff;padding:10px 16px;border-radius:99px;font-size:14px;opacity:0;transition:.3s;pointer-events:none;z-index:9}
 #toast.on{opacity:1}
 </style>
 </head>
 <body>
-<div id="res">
-  <div class="row"><div><small>PROFIT / LOSS is hafte</small><div id="pl">0</div></div><div style="text-align:right"><span id="tag" class="tzero">—</span><br><small>Aaj ki raqam</small> <b id="net">0</b></div></div>
-</div>
+<div id="res"><div class="row"><div><small>PROFIT / LOSS is hafte</small><div id="pl">0</div></div><div style="text-align:right"><span id="tag" class="tzero">—</span><br><small>Aaj ki raqam</small> <b id="net">0</b></div></div></div>
 <main id="m"></main>
 <nav id="nav"></nav>
 <div id="toast"></div>
 <script>
 const KEY="hisab_app_v1";
-const def={s:{mpt:145.5,wr:246,kr:246,siz:20,maz:560,tape:170,pick:52,wid:39,wc:35,kc:30.3,taar:2814,k:1850,clr:"",cutr:""},d:{prev:0,cap:0,wd:0,bags:[{}],loose:[],siz:[],cut:0,roll:0,tk:0,bank:0,hand:0,lena:[],mach:[],dena:[]},h:[]};
+const def={s:{mpt:145.5,tpg:7,wr:246,kr:246,siz:20,maz:560,tape:170,pick:52,wid:39,wc:35,kc:30.3,taar:2814,k:1850,incl:"Yes",clr:"",cutr:""},
+d:{prev:0,cap:0,wd:0,pb:0,ptk:0,pcut:0,pro:0,tku:0,gan:0,ncut:0,nb:0,nbk:0,srate:0,bags:[{}],tar:{w:0.04},nari:{w:0.044},siz:[],roll:0,bank:0,hand:0,lena:[],mach:[],dena:[]},h:[]};
 let A=JSON.parse(JSON.stringify(def)),tab=0;
 try{const x=localStorage.getItem(KEY);if(x)A=Object.assign(A,JSON.parse(x))}catch(e){}
-if(A.s&&A.s.wr===undefined){A.s.clr="";A.s.cutr=""}A.s=Object.assign({},def.s,A.s);A.d=Object.assign({},def.d,A.d);
+if(A.s&&A.s.wr===undefined){A.s.clr="";A.s.cutr=""}
+A.s=Object.assign({},def.s,A.s);A.d=Object.assign({},def.d,A.d);if(!A.d.tar)A.d.tar={w:0.04};if(!A.d.nari)A.d.nari={w:0.044};
 const save=()=>{try{localStorage.setItem(KEY,JSON.stringify(A))}catch(e){}};
-const n=v=>parseFloat(v)||0, f=v=>Math.round(v).toLocaleString("en-IN");
-const sg=v=>(v>0?"+":v<0?"−":"")+f(Math.abs(v));
-const d=()=>A.d, s=()=>A.s;
+const n=v=>parseFloat(v)||0,f=v=>Math.round(v).toLocaleString("en-IN"),sg=v=>(v>0?"+":v<0?"−":"")+f(Math.abs(v));
+const d=()=>A.d,s=()=>A.s;
 function rates(){const S=s(),k=n(S.k)||1850,wk=n(S.wc)?n(S.tape)*n(S.pick)*n(S.wid)/k/n(S.wc):0,kk=n(S.kc)?n(S.tape)*n(S.taar)/k/n(S.kc):0;
  const cutA=kk*(n(S.kr)+n(S.siz)),cpt=wk*n(S.wr)+cutA+n(S.maz),clrA=n(S.mpt)?cpt/n(S.mpt):0,has=v=>v!==""&&v!==undefined&&v!==null;
  return{wk,kk,cutA,cpt,clrA,cutr:has(S.cutr)?n(S.cutr):cutA,clr:has(S.clr)?n(S.clr):clrA}}
-function calc(){const D=d(),S=s();
- const r3=a=>a.reduce((t,x)=>t+n(x.b)*n(x.k)*n(x.r),0);
- const bags=r3(D.bags),loose=D.loose.reduce((t,x)=>t+n(x.k)*n(x.r),0),siz=r3(D.siz);
- const Rt=rates(),cut=n(D.cut)*Rt.cutr,roll=n(D.roll)*Rt.clr,tk=n(D.tk)*n(S.mpt)*Rt.clr;
- const sm=a=>a.reduce((t,x)=>t+n(x.a),0);
- const stock=bags+loose+siz+cut+roll+tk,cash=n(D.bank)+n(D.hand),lena=sm(D.lena),mach=sm(D.mach),dena=sm(D.dena);
- const net=stock+cash+lena+mach-dena, pl=net-n(D.prev)-n(D.cap)+n(D.wd);
- return{bags,loose,siz,cut,roll,tk,stock,cash,lena,mach,dena,net,pl}}
+function calc(){const D=d(),S=s(),Rt=rates(),mpt=n(S.mpt),tpg=n(S.tpg);
+ const bagskg=D.bags.reduce((t,x)=>t+n(x.b)*n(x.k),0),bags=D.bags.reduce((t,x)=>t+n(x.b)*n(x.k)*n(x.r),0);
+ const tarkg=n(D.tar.g)-n(D.tar.c)*n(D.tar.w),taramt=tarkg*n(D.tar.r);
+ const narikg=n(D.nari.q)*n(D.nari.w),nariamt=narikg*n(D.nari.r);
+ const rd=mpt?n(D.roll)/mpt:0,rwkg=rd*Rt.wk,rollv=n(D.roll)*Rt.clr;
+ const bkg=bagskg+tarkg+narikg+rwkg,bval=bags+taramt+nariamt;
+ const sizkg=D.siz.reduce((t,x)=>t+n(x.b)*n(x.k)+n(x.l),0),siz=D.siz.reduce((t,x)=>t+(n(x.b)*n(x.k)+n(x.l))*n(x.r),0);
+ const cutbal=n(D.pcut)+n(D.ncut)-n(D.tku),woven=S.incl==="Yes"?rd:0,cutun=cutbal-woven,cutv=cutun*Rt.cutr;
+ const sent=n(D.gan)*tpg,tkc=n(D.ptk)+n(D.tku)-sent,tkv=tkc*mpt*Rt.clr;
+ const recv=n(D.nb)*n(D.nbk),used=n(D.pb)+recv-bkg,akt=n(D.tku)>0?used/n(D.tku):0,diff=n(D.tku)>0&&Rt.wk>0?akt/Rt.wk-1:0;
+ const chk=n(D.tku)<=0?"Takha utre daalein":Math.abs(diff)<=0.03?"OK":"CHECK: ginti dobara dekhein";
+ const sm=a=>a.reduce((t,x)=>t+n(x.a),0),stock=bval+siz+cutv+rollv+tkv,cash=n(D.bank)+n(D.hand),lena=sm(D.lena),mach=sm(D.mach),dena=sm(D.dena);
+ const net=stock+cash+lena+mach-dena,pl=net-n(D.prev)-n(D.cap)+n(D.wd);
+ const margin=n(D.srate)?sent*mpt*(n(D.srate)-Rt.clr):0;
+ return{bags,bagskg,tarkg,taramt,narikg,nariamt,rd,rwkg,rollv,bkg,bval,siz,sizkg,cutbal,woven,cutun,cutv,sent,tkc,tkv,recv,used,akt,wk:Rt.wk,diffp:(diff>=0?"+":"")+(diff*100).toFixed(1)+"%",chk,stock,cash,lena,mach,dena,net,pl,margin,cutr:Rt.cutr,clr:Rt.clr,pcut:n(D.pcut),ncut:n(D.ncut),tku:n(D.tku),ptk:n(D.ptk),sold:sent}}
 function upd(){const c=calc(),p=document.getElementById("pl"),t=document.getElementById("tag");
  p.textContent=sg(c.pl);p.className=c.pl>0?"pos":c.pl<0?"neg":"";
  t.textContent=c.pl>0?"PROFIT":c.pl<0?"LOSS":"BARABAR";t.className=c.pl>0?"tpos":c.pl<0?"tneg":"tzero";
  document.getElementById("net").textContent=f(c.net);
  document.querySelectorAll("[data-sum]").forEach(e=>e.textContent=f(c[e.dataset.sum]));
+ document.querySelectorAll("[data-d]").forEach(e=>e.textContent=(+c[e.dataset.d]).toLocaleString("en-IN",{minimumFractionDigits:2,maximumFractionDigits:2}));
+ document.querySelectorAll("[data-x]").forEach(e=>{const v=c[e.dataset.x];e.textContent=v;e.className=String(v).startsWith("CHECK")?"neg":""});
  const Rt=rates();document.querySelectorAll("[data-r]").forEach(e=>e.textContent=Rt[e.dataset.r].toFixed(2));save();return c}
-const fld=(path,lab,hint)=>`<label class="f"><span>${lab}</span><input type="number" inputmode="decimal" step="any" data-p="${path}" value="${getv(path)}" placeholder="0"></label>`;
-function getv(p){let o=A,k=p.split(".");for(const q of k)o=o?.[q];return o===undefined||o===0?"":o}
+function getv(p){let o=A;for(const q of p.split("."))o=o?.[q];return o===undefined||o===0?"":o}
 function setv(p,v){let o=A,k=p.split(".");for(let i=0;i<k.length-1;i++)o=o[k[i]];o[k[k.length-1]]=v}
-function list(key,title,cols,addTxt,sum){const rows=d()[key];
- return`<div class="card"><h3>${title}</h3>`+rows.map((r,i)=>`<div class="item" style="grid-template-columns:${cols.map(c=>c.w||"1fr").join(" ")} 34px">`+cols.map(c=>`<div><small>${c.l}</small><input ${c.t==="text"?'type="text"':'type="number" inputmode="decimal" step="any"'} data-p="d.${key}.${i}.${c.k}" value="${r[c.k]??""}" placeholder="${c.ph||"0"}"></div>`).join("")+`<button class="x" data-del="${key}.${i}" aria-label="hatayein">×</button></div>`).join("")
+const fld=(p,lab)=>`<label class="f"><span>${lab}</span><input type="number" inputmode="decimal" step="any" data-p="${p}" value="${getv(p)}" placeholder="0"></label>`;
+const sr=(l,k,t="sum",c="")=>`<div class="${c}"><span>${l}</span><b data-${t}="${k}">0</b></div>`;
+function list(key,title,cols,addTxt,sum,hint){const rows=d()[key];
+ return`<div class="card"><h3>${title}</h3>${hint?`<p class="hint">${hint}</p>`:""}`+rows.map((r,i)=>`<div class="item" style="grid-template-columns:${cols.map(c=>c.w||"1fr").join(" ")} 34px">`+cols.map(c=>`<div><small>${c.l}</small><input ${c.t==="text"?'type="text"':'type="number" inputmode="decimal" step="any"'} data-p="d.${key}.${i}.${c.k}" value="${r[c.k]??""}" placeholder="${c.ph||"0"}"></div>`).join("")+`<button class="x" data-del="${key}.${i}" aria-label="hatayein">×</button></div>`).join("")
  +`<button class="add" data-add="${key}">+ ${addTxt}</button>`+(sum?`<div class="tot"><span>Total</span><span data-sum="${sum}">0</span></div>`:"")+`</div>`}
 const yarn=[{k:"b",l:"Bags"},{k:"k",l:"kg per bag"},{k:"r",l:"Rate / kg"}];
+const sizc=[{k:"b",l:"Bags"},{k:"k",l:"kg/bag"},{k:"l",l:"Khula kg"},{k:"r",l:"Rate/kg"}];
 const money=[{k:"n",l:"Naam",t:"text",ph:"Naam / party",w:"1.4fr"},{k:"a",l:"Raqam"}];
 const views=[
-()=>`<h2>1. Pichle hafte se</h2><p class="hint">Pehle hafte me pichli raqam 0 rakhein, aur jo paisa lagaya wo “naya paisa lagaya” me likhein.</p><div class="card">${fld("d.prev","Pichle hafte ki Net raqam (₹)")}${fld("d.cap","Is hafte naya paisa lagaya (₹)")}${fld("d.wd","Is hafte paisa nikala — ghar kharch (₹)")}</div>`,
-()=>`<h2>2. Maal (stock)</h2><p class="hint">Aaj jo maal hai wo ginein. Rate Settings se lagta hai.</p>`+
- list("bags","Baana yarn — bags",yarn,"Bags jodein","bags")+list("loose","Khula baana / tarashan / nari",[{k:"k",l:"kg"},{k:"r",l:"Rate / kg"}],"Khula yarn jodein","loose")+
- list("siz","Taana yarn — sizing me",yarn,"Sizing yarn jodein","siz")+
- `<div class="card"><h3>Cloth</h3>${fld("d.cut","Cut baaki (abhi bunna baaki)")}<p class="hint" style="margin-top:-4px">Loom pe bane roll ka hissa yahan mat ginein.</p>${fld("d.roll","Roll ka maal — loom pe (meter)")}${fld("d.tk","Takha stock (number)")}</div>
- <div class="card sum"><div><span>Maal ka total</span><b data-sum="stock">0</b></div></div>`,
-()=>`<h2>3. Paisa</h2><p class="hint">Cash, lena aur dena. Baaki bijli / sizing bill “Dena” me likhein.</p><div class="card">${fld("d.bank","Cash in account (₹)")}${fld("d.hand","Cash in hand (₹)")}</div>`+
+()=>`<h2>Shuru</h2><p class="hint">Pehle hafte me sab 0 chhodein, aur jo paisa lagaya wo “naya paisa lagaya” me likhein.</p>
+<div class="card"><h3>Pichle hafte se</h3>${fld("d.prev","Pichle hafte ki Net raqam (₹)")}${fld("d.cap","Is hafte naya paisa lagaya (₹)")}${fld("d.wd","Is hafte paisa nikala — ghar kharch (₹)")}</div>
+<div class="card"><h3>Pichle hafte ka closing</h3><p class="hint">Hafta save karne par ye apne aap bhar jaata hai.</p>${fld("d.pb","Pichla baana stock (kg)")}${fld("d.ptk","Pichla takha stock")}${fld("d.pcut","Pichla cut stock")}${fld("d.pro","Pichla roll ka maal (meter)")}</div>
+<div class="card"><h3>Is hafte kya hua</h3>${fld("d.tku","Takha loom se utre (dori utri)")}${fld("d.gan","Ganth bheji / becha")}${fld("d.ncut","Naya beam cut aaya")}${fld("d.nb","Naye baana bags aaye (qty)")}${fld("d.nbk","Naye bags ka kg per bag")}${fld("d.srate","Becha hua cloth — average rate per meter (₹)")}</div>`,
+()=>`<h2>Maal (stock)</h2><p class="hint">Aaj jo maal hai wo ginein. Rate Settings se lagta hai.</p>
+<h2 style="font-size:17px">BAANA (weft)</h2>`+
+ list("bags","1. Pack bags",yarn,"Bags jodein","bags")+
+ `<div class="card"><h3>2. Tarashan (loose)</h3>${fld("d.tar.g","Gross kg")}${fld("d.tar.c","Kukdi ki ginti")}${fld("d.tar.w","1 kukdi ka wazan (kg)")}${fld("d.tar.r","Rate per kg")}<div class="sum">${sr("Net kg","tarkg","d")}${sr("Raqam","taramt")}</div></div>
+ <div class="card"><h3>3. Nari</h3>${fld("d.nari.q","Nari ki ginti (quantity)")}${fld("d.nari.w","1 nari ka wazan (kg)")}${fld("d.nari.r","Rate per kg")}<div class="sum">${sr("Net kg","narikg","d")}${sr("Raqam","nariamt")}</div></div>
+ <div class="card"><h3>4. Roll ka maal (loom pe bana cloth)</h3>${fld("d.roll","Roll ka maal (meter)")}<div class="sum">${sr("Itne dori / takha","rd","d")}${sr("Isme baana (kg)","rwkg","d")}${sr("Cloth ki value","rollv")}</div></div>
+ <div class="card sum"><h3>Baana ka total</h3>${sr("Total baana kg (roll ke saath)","bkg","d")}${sr("Baana ki raqam (sirf yarn)","bval","sum","t")}</div>
+ <div class="card sum"><h3>Baana check</h3>${sr("Baana use hua (kg)","used","d")}${sr("Asli kg per takha","akt","d")}${sr("Standard kg per takha","wk","d")}${sr("Farq","diffp","x")}${sr("Status","chk","x","t")}</div>
+ <h2 style="font-size:17px">TAANA (sizing me)</h2>`+
+ list("siz","Taana yarn — sizing me",sizc,"Sizing yarn jodein","siz")+
+ `<h2 style="font-size:17px">CUT</h2><div class="card sum"><h3>Cut (beam pe)</h3>${sr("Pichla cut","pcut","d")}${sr("+ Naya beam cut","ncut","d")}${sr("− Takha utre","tku","d")}${sr("= Cut balance","cutbal","d","t")}${sr("− Roll me bun chuka","woven","d")}${sr("= Baaki cut","cutun","d","t")}${sr("Cut rate","cutr","d")}${sr("Cut ki value","cutv")}</div>
+ <h2 style="font-size:17px">TAKHA</h2><div class="card sum"><h3>Takha (taiyar cloth)</h3>${sr("Pichla takha","ptk","d")}${sr("+ Loom se utre","tku","d")}${sr("− Bheje / beche (ganth x takha)","sold","d")}${sr("= Aaj ka takha stock","tkc","d","t")}${sr("Cloth rate per meter","clr","d")}${sr("Takha ki value","tkv")}</div>
+ <div class="card sum"><div class="t">${sr("Maal ka total","stock")}</div></div>`,
+()=>`<h2>Paisa</h2><p class="hint">Cash, lena aur dena. Baaki bijli / sizing bill “Dena” me likhein.</p><div class="card">${fld("d.bank","Cash in account (₹)")}${fld("d.hand","Cash in hand (₹)")}</div>`+
  list("lena","Lena — jo paisa aana hai",money,"Lena jodein","lena")+list("mach","Machine / loom / deposit (aaj ki value)",money,"Machine jodein","mach")+list("dena","Dena — jo paisa dena hai",money,"Dena jodein","dena"),
-()=>{const c=calc();return`<h2>4. Hafta</h2><div class="card sum"><h3>Hisab</h3><div><span>Maal</span><b data-sum="stock">0</b></div><div><span>Cash</span><b data-sum="cash">0</b></div><div><span>Lena</span><b data-sum="lena">0</b></div><div><span>Machine</span><b data-sum="mach">0</b></div><div><span>Minus: Dena</span><b data-sum="dena">0</b></div><div style="border-top:1px solid var(--line);margin-top:4px;padding-top:8px"><span><b>Aaj ki Net raqam</b></span><b data-sum="net">0</b></div></div>
- <button class="btn" id="saveW">Is hafte ko save karein</button><p class="hint">Save karne par Net raqam agle hafte ke liye “pichli raqam” ban jaati hai aur naya hafta shuru hota hai.</p>
+()=>{const D=d();return`<h2>Hafta</h2><div class="card sum"><h3>Hisab</h3>${sr("Maal","stock")}${sr("Cash","cash")}${sr("Lena","lena")}${sr("Machine","mach")}${sr("Minus: Dena","dena")}${sr("Aaj ki Net raqam","net","sum","t")}${n(D.srate)?sr("Bikri margin (is hafte)","margin"):""}</div>
+ <button class="btn" id="saveW">Is hafte ko save karein</button><p class="hint">Save karne par Net raqam, baana, takha, cut aur roll agle hafte ke liye apne aap bhar jaate hain.</p>
  <h2>Pichle hafte</h2><div class="card">${A.h.length?A.h.slice().reverse().map((x,i)=>`<div class="hrow"><div><b>${x.date}</b><br><small>Net ${f(x.net)}</small></div><div style="display:flex;align-items:center;gap:6px"><b class="${x.pl>=0?"pos":"neg"}">${sg(x.pl)}</b><button class="x" data-hd="${A.h.length-1-i}">×</button></div></div>`).join("")+`<div class="tot"><span>Ab tak ka total</span><span class="${A.h.reduce((t,x)=>t+x.pl,0)>=0?"pos":"neg"}">${sg(A.h.reduce((t,x)=>t+x.pl,0))}</span></div>`:'<p class="hint">Abhi koi hafta save nahi hua.</p>'}</div>`},
 ()=>`<h2>Settings</h2><p class="hint">Excel jaisa hisab: quality aur rate bharein, cloth aur cut ka rate apne aap banega. Sirf rate ya quality badle tabhi badlein.</p>
 <div class="card sum"><h3>Jo rate use hoga</h3><div><span>Cloth rate per meter</span><b>₹ <span data-r="clr">0</span></b></div><div><span>Cut rate (1 cut)</span><b>₹ <span data-r="cutr">0</span></b></div></div>
 <div class="card"><h3>Yarn rate aur mazdoori</h3>${fld("s.wr","Baana (weft) yarn rate / kg")}${fld("s.kr","Taana (warp) yarn rate / kg")}${fld("s.siz","Sizing charge / kg")}${fld("s.maz","Mazdoori per takha (sab kharch)")}</div>
-<div class="card"><h3>Quality</h3>${fld("s.mpt","Meter per takha")}${fld("s.tape","Tapeline")}${fld("s.pick","Pick")}${fld("s.wid","Width (inch)")}${fld("s.wc","Baana count")}${fld("s.kc","Taana count")}${fld("s.taar","Taar (total warp ends)")}${fld("s.k","Fixed number (1850)")}</div>
-<div class="card sum"><h3>Auto hisab</h3><div><span>Baana kg per takha</span><b data-r="wk">0</b></div><div><span>Taana kg per takha</span><b data-r="kk">0</b></div><div><span>Auto cut rate</span><b data-r="cutA">0</b></div><div><span>Costing per takha</span><b data-r="cpt">0</b></div><div><span>Auto cloth rate / meter</span><b data-r="clrA">0</b></div></div>
+<div class="card"><h3>Quality</h3>${fld("s.mpt","Meter per takha")}${fld("s.tpg","Takha per ganth")}${fld("s.tape","Tapeline")}${fld("s.pick","Pick")}${fld("s.wid","Width (inch)")}${fld("s.wc","Baana count")}${fld("s.kc","Taana count")}${fld("s.taar","Taar (total warp ends)")}${fld("s.k","Fixed number (1850)")}</div>
+<div class="card"><h3>Cut ka niyam</h3><label class="f"><span>Cut balance me roll ka bunaa hissa shamil hai?</span><select data-p="s.incl"><option value="Yes"${s().incl==="Yes"?" selected":""}>Yes (roll ka hissa ghataya jayega)</option><option value="No"${s().incl==="No"?" selected":""}>No</option></select></label></div>
+<div class="card sum"><h3>Auto hisab</h3>${["Baana kg per takha|wk","Taana kg per takha|kk","Auto cut rate|cutA","Costing per takha|cpt","Auto cloth rate / meter|clrA"].map(x=>{const[a,b]=x.split("|");return`<div><span>${a}</span><b data-r="${b}">0</b></div>`}).join("")}</div>
 <div class="card"><h3>Apna rate lagana ho (optional)</h3><p class="hint">Khali chhodein to auto rate chalega.</p>${fld("s.clr","Cloth rate per meter — apna (₹)")}${fld("s.cutr","Cut rate — apna (₹)")}</div>
 <button class="btn s" id="reset">Saara data saaf karein</button>`
 ];
-const tabs=[["📥","Pichla"],["📦","Maal"],["💰","Paisa"],["📊","Hafta"],["⚙️","Settings"]];
+const tabs=[["📥","Shuru"],["📦","Maal"],["💰","Paisa"],["📊","Hafta"],["⚙️","Settings"]];
 function render(){document.getElementById("m").innerHTML=views[tab]();
  document.getElementById("nav").innerHTML=tabs.map((t,i)=>`<button class="${i===tab?"on":""}" data-t="${i}"><b>${t[0]}</b>${t[1]}</button>`).join("");upd()}
 function toast(t){const e=document.getElementById("toast");e.textContent=t;e.classList.add("on");setTimeout(()=>e.classList.remove("on"),1800)}
-document.addEventListener("input",e=>{const p=e.target.dataset?.p;if(!p)return;const k=p.split("."),last=k[k.length-1];
- setv(p,e.target.type==="text"?e.target.value:(e.target.value===""?"":parseFloat(e.target.value)));upd()});
+document.addEventListener("input",e=>{const p=e.target.dataset?.p;if(!p)return;
+ setv(p,e.target.tagName==="SELECT"||e.target.type==="text"?e.target.value:(e.target.value===""?"":parseFloat(e.target.value)));upd()});
 document.addEventListener("focusin",e=>{if(e.target.type==="number")e.target.select?.()});
 document.addEventListener("click",e=>{const t=e.target.closest("[data-t],[data-add],[data-del],[data-hd],#saveW,#reset");if(!t)return;
  if(t.dataset.t!==undefined){tab=+t.dataset.t;render();scrollTo(0,0)}
  else if(t.dataset.add){d()[t.dataset.add].push({});render()}
  else if(t.dataset.del){const[k,i]=t.dataset.del.split(".");d()[k].splice(+i,1);render()}
  else if(t.dataset.hd){A.h.splice(+t.dataset.hd,1);render()}
- else if(t.id==="saveW"){const c=calc();A.h.push({date:new Date().toLocaleDateString("en-GB"),net:c.net,pl:c.pl});d().prev=c.net;d().cap=0;d().wd=0;save();render();toast("Hafta save ho gaya")}
+ else if(t.id==="saveW"){const c=calc(),D=d();A.h.push({date:new Date().toLocaleDateString("en-GB"),net:c.net,pl:c.pl});
+  D.prev=c.net;D.pb=c.bkg;D.ptk=c.tkc;D.pcut=c.cutbal;D.pro=n(D.roll);D.cap=0;D.wd=0;D.tku=0;D.gan=0;D.ncut=0;D.nb=0;D.nbk=0;D.srate=0;save();render();toast("Hafta save ho gaya")}
  else if(t.id==="reset"&&confirm("Saara data hat jayega. Pakka?")){A=JSON.parse(JSON.stringify(def));save();render()}});
 render();
 if("serviceWorker" in navigator){window.addEventListener("load",()=>navigator.serviceWorker.register("./sw.js").catch(()=>{}))}
