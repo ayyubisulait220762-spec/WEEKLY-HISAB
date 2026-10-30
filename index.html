@@ -63,17 +63,21 @@ nav button.on{color:var(--pri);font-weight:700}
 <div id="toast"></div>
 <script>
 const KEY="hisab_app_v1";
-const def={s:{mpt:145.5,clr:28.49,cutr:2276.39},d:{prev:0,cap:0,wd:0,bags:[{}],loose:[],siz:[],cut:0,roll:0,tk:0,bank:0,hand:0,lena:[],mach:[],dena:[]},h:[]};
+const def={s:{mpt:145.5,wr:246,kr:246,siz:20,maz:560,tape:170,pick:52,wid:39,wc:35,kc:30.3,taar:2814,k:1850,clr:"",cutr:""},d:{prev:0,cap:0,wd:0,bags:[{}],loose:[],siz:[],cut:0,roll:0,tk:0,bank:0,hand:0,lena:[],mach:[],dena:[]},h:[]};
 let A=JSON.parse(JSON.stringify(def)),tab=0;
 try{const x=localStorage.getItem(KEY);if(x)A=Object.assign(A,JSON.parse(x))}catch(e){}
+if(A.s&&A.s.wr===undefined){A.s.clr="";A.s.cutr=""}A.s=Object.assign({},def.s,A.s);A.d=Object.assign({},def.d,A.d);
 const save=()=>{try{localStorage.setItem(KEY,JSON.stringify(A))}catch(e){}};
 const n=v=>parseFloat(v)||0, f=v=>Math.round(v).toLocaleString("en-IN");
 const sg=v=>(v>0?"+":v<0?"−":"")+f(Math.abs(v));
 const d=()=>A.d, s=()=>A.s;
+function rates(){const S=s(),k=n(S.k)||1850,wk=n(S.wc)?n(S.tape)*n(S.pick)*n(S.wid)/k/n(S.wc):0,kk=n(S.kc)?n(S.tape)*n(S.taar)/k/n(S.kc):0;
+ const cutA=kk*(n(S.kr)+n(S.siz)),cpt=wk*n(S.wr)+cutA+n(S.maz),clrA=n(S.mpt)?cpt/n(S.mpt):0,has=v=>v!==""&&v!==undefined&&v!==null;
+ return{wk,kk,cutA,cpt,clrA,cutr:has(S.cutr)?n(S.cutr):cutA,clr:has(S.clr)?n(S.clr):clrA}}
 function calc(){const D=d(),S=s();
  const r3=a=>a.reduce((t,x)=>t+n(x.b)*n(x.k)*n(x.r),0);
  const bags=r3(D.bags),loose=D.loose.reduce((t,x)=>t+n(x.k)*n(x.r),0),siz=r3(D.siz);
- const cut=n(D.cut)*S.cutr,roll=n(D.roll)*S.clr,tk=n(D.tk)*S.mpt*S.clr;
+ const Rt=rates(),cut=n(D.cut)*Rt.cutr,roll=n(D.roll)*Rt.clr,tk=n(D.tk)*n(S.mpt)*Rt.clr;
  const sm=a=>a.reduce((t,x)=>t+n(x.a),0);
  const stock=bags+loose+siz+cut+roll+tk,cash=n(D.bank)+n(D.hand),lena=sm(D.lena),mach=sm(D.mach),dena=sm(D.dena);
  const net=stock+cash+lena+mach-dena, pl=net-n(D.prev)-n(D.cap)+n(D.wd);
@@ -82,7 +86,8 @@ function upd(){const c=calc(),p=document.getElementById("pl"),t=document.getElem
  p.textContent=sg(c.pl);p.className=c.pl>0?"pos":c.pl<0?"neg":"";
  t.textContent=c.pl>0?"PROFIT":c.pl<0?"LOSS":"BARABAR";t.className=c.pl>0?"tpos":c.pl<0?"tneg":"tzero";
  document.getElementById("net").textContent=f(c.net);
- document.querySelectorAll("[data-sum]").forEach(e=>e.textContent=f(c[e.dataset.sum]));save();return c}
+ document.querySelectorAll("[data-sum]").forEach(e=>e.textContent=f(c[e.dataset.sum]));
+ const Rt=rates();document.querySelectorAll("[data-r]").forEach(e=>e.textContent=Rt[e.dataset.r].toFixed(2));save();return c}
 const fld=(path,lab,hint)=>`<label class="f"><span>${lab}</span><input type="number" inputmode="decimal" step="any" data-p="${path}" value="${getv(path)}" placeholder="0"></label>`;
 function getv(p){let o=A,k=p.split(".");for(const q of k)o=o?.[q];return o===undefined||o===0?"":o}
 function setv(p,v){let o=A,k=p.split(".");for(let i=0;i<k.length-1;i++)o=o[k[i]];o[k[k.length-1]]=v}
@@ -103,7 +108,13 @@ const views=[
 ()=>{const c=calc();return`<h2>4. Hafta</h2><div class="card sum"><h3>Hisab</h3><div><span>Maal</span><b data-sum="stock">0</b></div><div><span>Cash</span><b data-sum="cash">0</b></div><div><span>Lena</span><b data-sum="lena">0</b></div><div><span>Machine</span><b data-sum="mach">0</b></div><div><span>Minus: Dena</span><b data-sum="dena">0</b></div><div style="border-top:1px solid var(--line);margin-top:4px;padding-top:8px"><span><b>Aaj ki Net raqam</b></span><b data-sum="net">0</b></div></div>
  <button class="btn" id="saveW">Is hafte ko save karein</button><p class="hint">Save karne par Net raqam agle hafte ke liye “pichli raqam” ban jaati hai aur naya hafta shuru hota hai.</p>
  <h2>Pichle hafte</h2><div class="card">${A.h.length?A.h.slice().reverse().map((x,i)=>`<div class="hrow"><div><b>${x.date}</b><br><small>Net ${f(x.net)}</small></div><div style="display:flex;align-items:center;gap:6px"><b class="${x.pl>=0?"pos":"neg"}">${sg(x.pl)}</b><button class="x" data-hd="${A.h.length-1-i}">×</button></div></div>`).join("")+`<div class="tot"><span>Ab tak ka total</span><span class="${A.h.reduce((t,x)=>t+x.pl,0)>=0?"pos":"neg"}">${sg(A.h.reduce((t,x)=>t+x.pl,0))}</span></div>`:'<p class="hint">Abhi koi hafta save nahi hua.</p>'}</div>`},
-()=>`<h2>Settings</h2><p class="hint">Sirf rate ya quality badle tabhi badlein.</p><div class="card">${fld("s.clr","Cloth rate per meter (₹)")}${fld("s.cutr","Cut rate — 1 cut ki cost (₹)")}${fld("s.mpt","Meter per takha")}</div><button class="btn s" id="reset">Saara data saaf karein</button>`
+()=>`<h2>Settings</h2><p class="hint">Excel jaisa hisab: quality aur rate bharein, cloth aur cut ka rate apne aap banega. Sirf rate ya quality badle tabhi badlein.</p>
+<div class="card sum"><h3>Jo rate use hoga</h3><div><span>Cloth rate per meter</span><b>₹ <span data-r="clr">0</span></b></div><div><span>Cut rate (1 cut)</span><b>₹ <span data-r="cutr">0</span></b></div></div>
+<div class="card"><h3>Yarn rate aur mazdoori</h3>${fld("s.wr","Baana (weft) yarn rate / kg")}${fld("s.kr","Taana (warp) yarn rate / kg")}${fld("s.siz","Sizing charge / kg")}${fld("s.maz","Mazdoori per takha (sab kharch)")}</div>
+<div class="card"><h3>Quality</h3>${fld("s.mpt","Meter per takha")}${fld("s.tape","Tapeline")}${fld("s.pick","Pick")}${fld("s.wid","Width (inch)")}${fld("s.wc","Baana count")}${fld("s.kc","Taana count")}${fld("s.taar","Taar (total warp ends)")}${fld("s.k","Fixed number (1850)")}</div>
+<div class="card sum"><h3>Auto hisab</h3><div><span>Baana kg per takha</span><b data-r="wk">0</b></div><div><span>Taana kg per takha</span><b data-r="kk">0</b></div><div><span>Auto cut rate</span><b data-r="cutA">0</b></div><div><span>Costing per takha</span><b data-r="cpt">0</b></div><div><span>Auto cloth rate / meter</span><b data-r="clrA">0</b></div></div>
+<div class="card"><h3>Apna rate lagana ho (optional)</h3><p class="hint">Khali chhodein to auto rate chalega.</p>${fld("s.clr","Cloth rate per meter — apna (₹)")}${fld("s.cutr","Cut rate — apna (₹)")}</div>
+<button class="btn s" id="reset">Saara data saaf karein</button>`
 ];
 const tabs=[["📥","Pichla"],["📦","Maal"],["💰","Paisa"],["📊","Hafta"],["⚙️","Settings"]];
 function render(){document.getElementById("m").innerHTML=views[tab]();
